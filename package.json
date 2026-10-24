@@ -25,5 +25,10 @@
   "devDependencies": {
     "dotenv": "^16.6.1",
     "prisma": "^7.10.1"
+  },
+  "allowScripts": {
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true,
+    "unrs-resolver@1.12.2": true
   }
 }

@@ -5,15 +5,19 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  ServiceUnavailableException,
 } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(ApiExceptionFilter.name);
 
+  constructor(private readonly adapterHost: HttpAdapterHost) {}
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const http = host.switchToHttp();
-    const adapter = host.getHttpAdapter();
+    const adapter = this.adapterHost.httpAdapter;
     const status =
       exception instanceof HttpException
         ? exception.getStatus()
@@ -24,7 +28,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const error = HttpStatus[status] ?? 'Error';
     const request = http.getRequest<{ url?: string }>();
 
-    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (
+      status >= HttpStatus.INTERNAL_SERVER_ERROR &&
+      !(exception instanceof ServiceUnavailableException)
+    ) {
       const name = exception instanceof Error ? exception.name : 'UnknownError';
       this.logger.error(`Unhandled request error: ${name} (${status})`);
     }
@@ -35,7 +42,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
         statusCode: status,
         error,
         message,
-        path: request.url ?? '/',
+        path: request.url?.split('?', 1)[0] ?? '/',
         timestamp: new Date().toISOString(),
       },
       status,
@@ -47,6 +54,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
     response: string | object | undefined,
     status: number,
   ): string {
+    if (exception instanceof ServiceUnavailableException) {
+      return exception.message;
+    }
+
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       return 'Internal server error';
     }

@@ -2,18 +2,19 @@
 
 ## Phase 0 — Repository audit and product baseline
 
-**Status: complete for the newly scaffolded repository.**
+**Status: complete for the new application baseline.**
 
-- The workspace was empty before scaffolding; there was no existing application, user data, database schema, or feature to preserve.
+- The workspace had no application files when the audit began; there was no user data or database schema to preserve.
 - The project is an npm-workspace monorepo with a Next.js web app and a NestJS/Fastify API.
-- PostgreSQL and Prisma provide the initial persistence foundation.
+- PostgreSQL and Prisma 7 with the PostgreSQL driver adapter provide the initial persistence foundation.
 - No existing authentication, question bank, assessments, subscription integration, AI provider, or production content was present.
 - Initial baseline checks could not run before scaffolding because there was no project or package manifest.
-- Docker and a local PostgreSQL CLI were unavailable in the environment. Database-backed migration and readiness checks therefore require a configured PostgreSQL service.
+- A remote-backed Git history appeared during scaffolding; it was preserved and no existing commits were rewritten.
+- Docker and a local PostgreSQL CLI are unavailable in the environment. A live database migration could not be applied or verified.
 
 ## Phase 1 — Foundation, environment and quality gates
 
-**Status: scaffolded; verification pending.**
+**Status: verified except for live database migration.**
 
 - [x] npm workspaces and documented local development commands.
 - [x] Environment example and server-side API environment validation.
@@ -22,13 +23,27 @@
 - [x] Fastify adapter, CORS allowlist, security headers, request validation and common error shape.
 - [x] Lint, typecheck, unit-test, end-to-end-test and build scripts.
 - [x] CI workflow for install and core checks.
-- [ ] Install dependencies and execute checks.
+- [x] Install dependencies and execute checks.
 - [ ] Apply the migration against an isolated PostgreSQL database.
-- [ ] Review dependency and secret scans.
+- [x] Review dependency audit and scan tracked files for common secret patterns.
+
+Verification results:
+
+- `npm run lint` — passed.
+- `npm run typecheck` — passed for both workspaces.
+- `npm run test` — passed, 3 unit tests.
+- `npm run test:e2e` — passed, 3 API health tests with a mocked Prisma service.
+- `npm run build` — passed for the API and web app.
+- `npx prisma validate` — passed; `npm run db:generate` — passed.
+- `npm audit` — 0 vulnerabilities after upgrading to Prisma 7.10.1.
+- Production smoke test — homepage, RN/PN pages and API liveness returned HTTP 200; database readiness returned the expected HTTP 503 because PostgreSQL is not running.
+- Secret-pattern scan — no known token or private-key patterns found in tracked files.
+
+The API end-to-end tests use an isolated Prisma mock. They do not substitute for applying the migration or testing against PostgreSQL.
 
 ## Phase 2 — Design system, navigation and core UI shell
 
-**Status: initial public shell scaffolded; authentication and student/admin shells remain outstanding.**
+**Status: initial public shell scaffolded and production build verified; authentication and student/admin shells remain outstanding.**
 
 - [x] Responsive public landing page and RN/PN pathway routes.
 - [x] Keyboard focus, reduced-motion support and small-screen layouts.
