@@ -14,7 +14,7 @@
 
 ## 3. PostgreSQL and Prisma; no queue yet
 
-**Decision:** PostgreSQL is the system-of-record target; Prisma owns schema and migrations. Do not add Redis/BullMQ to the initial scaffold.
+**Decision:** PostgreSQL is the system-of-record target; Prisma 7 with its PostgreSQL driver adapter owns schema and migrations. Do not add Redis/BullMQ to the initial scaffold.
 
 **Reason:** The initial foundation needs durable relational storage. There is not yet an implemented asynchronous workflow that justifies operating a queue.
 
