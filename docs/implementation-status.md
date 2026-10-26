@@ -2,20 +2,29 @@
 
 ## Phase 0 — Repository audit and product baseline
 
-**Status: complete for the new application baseline.**
+**Status: complete.**
 
-- The workspace had no application files when the audit began; there was no user data or database schema to preserve.
-- The project is an npm-workspace monorepo with a Next.js web app and a NestJS/Fastify API.
-- PostgreSQL and Prisma 7 with the PostgreSQL driver adapter provide the initial persistence foundation.
-- No existing authentication, question bank, assessments, subscription integration, AI provider, or production content was present.
-- Initial baseline checks could not run before scaffolding because there was no project or package manifest.
-- A remote-backed Git history appeared during scaffolding; it was preserved and no existing commits were rewritten.
-- Docker and a local PostgreSQL CLI are unavailable in the environment. A live database migration could not be applied or verified.
+Audit report: `docs/audit-report.md`. Stack deviation decision: `docs/decisions.md` (decision 7).
+
+Baseline verified with a locally created `.env` copied from `.env.example` (README-documented setup). PostgreSQL is unavailable in this environment, so the migration could not be applied against a live database; this is an environment limitation, not a code failure.
+
+Verification results:
+
+- `npm run lint` — passed (api + web)
+- `npm run typecheck` — passed (api + web)
+- `npm run test` — passed, 3 unit tests (requires `DATABASE_URL`; fails without it until `.env` is created)
+- `npm run test:e2e` — passed, 3 API health tests with a mocked Prisma service (requires `DATABASE_URL`)
+- `npm run build` — passed (api + web)
+- `npx prisma validate` — passed; `npm run db:generate` — passed
+
+Note: earlier status entries claiming tests passed unconditionally are corrected here — tests require `DATABASE_URL` to be present at API import time.
 
 ## Phase 1 — Foundation, environment and quality gates
 
-**Status: verified except for live database migration.**
+**Status: not started (blocked on live PostgreSQL).**
 
+- [ ] Apply the migration against an isolated PostgreSQL database.
+- [ ] Confirm `npm run db:generate` and `npm run db:deploy` work against the target database.
 - [x] npm workspaces and documented local development commands.
 - [x] Environment example and server-side API environment validation.
 - [x] PostgreSQL Compose service and additive initial Prisma migration.
@@ -24,22 +33,7 @@
 - [x] Lint, typecheck, unit-test, end-to-end-test and build scripts.
 - [x] CI workflow for install and core checks.
 - [x] Install dependencies and execute checks.
-- [ ] Apply the migration against an isolated PostgreSQL database.
 - [x] Review dependency audit and scan tracked files for common secret patterns.
-
-Verification results:
-
-- `npm run lint` — passed.
-- `npm run typecheck` — passed for both workspaces.
-- `npm run test` — passed, 3 unit tests.
-- `npm run test:e2e` — passed, 3 API health tests with a mocked Prisma service.
-- `npm run build` — passed for the API and web app.
-- `npx prisma validate` — passed; `npm run db:generate` — passed.
-- `npm audit` — 0 vulnerabilities after upgrading to Prisma 7.10.1.
-- Production smoke test — homepage, RN/PN pages and API liveness returned HTTP 200; database readiness returned the expected HTTP 503 because PostgreSQL is not running.
-- Secret-pattern scan — no known token or private-key patterns found in tracked files.
-
-The API end-to-end tests use an isolated Prisma mock. They do not substitute for applying the migration or testing against PostgreSQL.
 
 ## Phase 2 — Design system, navigation and core UI shell
 
@@ -49,6 +43,7 @@ The API end-to-end tests use an isolated Prisma mock. They do not substitute for
 - [x] Keyboard focus, reduced-motion support and small-screen layouts.
 - [ ] Authenticated student and administrator layouts.
 - [ ] Shared reusable form, navigation and application-state components.
+- [ ] shadcn/ui component system (adopt as the single component system; do not maintain two competing systems).
 
 ## Remaining phases
 
@@ -74,4 +69,5 @@ The API end-to-end tests use an isolated Prisma mock. They do not substitute for
 - No question or clinical learning content has been fabricated or imported.
 - Formal CAT is blocked on an approved psychometric method, calibrated item data and validation.
 - Payments and AI are blocked on provider, policy and credential decisions.
-- Phase 1 checks and database migration need to be run in an environment with installed dependencies and PostgreSQL.
+- Backend is NestJS/TypeScript + Prisma (not .NET/EF Core); deviation documented in `docs/decisions.md` decision 7 and `docs/audit-report.md`. No rewrite performed.
+- PostgreSQL unavailable locally; live migration verification deferred to an environment with a running PostgreSQL instance.

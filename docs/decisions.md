@@ -35,3 +35,9 @@
 **Decision:** Do not implement or advertise CAT in the scaffold.
 
 **Reason:** A defensible CAT implementation requires calibrated item parameters, an approved model and validated stopping rules, none of which were supplied.
+
+## 7. Preserve the NestJS/TypeScript + Prisma backend (deviation from the agreed .NET stack)
+
+**Decision:** Keep the existing NestJS 12 + Fastify backend with Prisma 7 and PostgreSQL; do not rewrite it as ASP.NET Core / EF Core.
+
+**Reason:** The backend is a working, tested module (lint, typecheck, unit tests, e2e tests, and production build all pass). Stack rule #1 prohibits a wholesale rewrite, and rule #3 requires reusing working modules. The agreed stack names .NET/C# ASP.NET Core, but the actual repository is NestJS/TypeScript. This deviation is documented in `docs/audit-report.md` (stack mapping) rather than silently changing architecture. Prisma is retained as the ORM; no second ORM is introduced.
